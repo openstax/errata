@@ -12,7 +12,6 @@ from django.utils.html import format_html
 from wagtail.core import hooks
 from wagtail.admin.menu import MenuItem
 
-from books.models import Book
 from django.conf import settings
 from oxauth.functions import get_user_info
 
@@ -138,8 +137,7 @@ class Errata(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     # TODO: If we seperate the Errata application from the CMS, the books will need to be store differently. `book` will be removed, `openstax_book` will store as string
-    book = models.ForeignKey(Book, on_delete=models.PROTECT)
-    openstax_book = models.CharField(max_length=255, null=True, blank=True, editable=False)
+    openstax_book = 'book1, book2, book3,'
 
     is_assessment_errata = models.CharField(
         max_length=100,
