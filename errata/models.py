@@ -137,6 +137,7 @@ class Errata(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     # TODO: If we seperate the Errata application from the CMS, the books will need to be store differently. `book` will be removed, `openstax_book` will store as string
+    book = 'book1, book2, book3,'
     openstax_book = 'book1, book2, book3,'
 
     is_assessment_errata = models.CharField(
