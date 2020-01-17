@@ -9,8 +9,6 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.core.validators import MinValueValidator
 from django.utils.html import format_html
-from wagtail.core import hooks
-from wagtail.admin.menu import MenuItem
 
 from django.conf import settings
 from oxauth.functions import get_user_info
@@ -135,10 +133,7 @@ class BlockedUser(models.Model):
 class Errata(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-
-    # TODO: If we seperate the Errata application from the CMS, the books will need to be store differently. `book` will be removed, `openstax_book` will store as string
-    book = 'book1, book2, book3,'
-    openstax_book = 'book1, book2, book3,'
+    openstax_book = models.CharField(max_length=255, null=True, blank=True)
 
     is_assessment_errata = models.CharField(
         max_length=100,
@@ -244,8 +239,6 @@ class Errata(models.Model):
         if self.status == "Completed" and self.resolution != "Will Not Fix":
             self.corrected_date = now()
 
-            Book.objects.filter(pk=self.book.pk).update(last_updated_web=now())
-
         # prefill resolution notes based on certain status and resolutions
         if self.resolution == "Duplicate" and not self.resolution_notes:
             self.resolution_notes = "This is a duplicate of report <a href='https://openstax.org/errata/" + str(self.duplicate_id.id) + "'>" + str(self.duplicate_id.id) + "</a>."
@@ -270,16 +263,9 @@ class Errata(models.Model):
 
         super(Errata, self).save(*args, **kwargs)
 
-    @hooks.register('register_admin_menu_item')
-    def register_errata_menu_item():
-        return MenuItem('Errata', '/django-admin/errata/errata', classnames='icon icon-form', order=10000)
-
-    # @hooks.register('register_admin_menu_item')
-    # def register_errata_menu_item():
-    #     return MenuItem('Errata (beta)', '/api/errata/admin/dashboard/', classnames='icon icon-form', order=10000)
 
     def __str__(self):
-        return self.book.book_title
+        return self.openstax_book
 
     class Meta:
         verbose_name = "erratum"
@@ -363,7 +349,7 @@ def send_status_update_email(sender, instance, created, **kwargs):
                 'resolution': instance.resolution,
                 'created': created,
                 'id': instance.id,
-                'title': instance.book.title,
+                'title': instance.openstax_book,
                 'source': instance.resource,
                 'error_type': instance.error_type,
                 'location': instance.location,

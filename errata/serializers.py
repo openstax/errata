@@ -11,7 +11,7 @@ class ErrataSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'created',
                   'modified',
-                  'book',
+                  'openstax_book',
                   'status',
                   'resolution',
                   'reviewed_date',
