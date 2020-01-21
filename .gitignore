@@ -1,3 +1,14 @@
-errata_venv/*
-*/.DS_Store
-.DS_Store
+/.vagrant
+/static
+*.pyc
+/media
+/Vagrantfile.local
+erratatool/settings/local.py
+*.log
+/.idea
+/htmlcov
+/.coverage
+.DS_STORE
+__pycache__/*
+*.bk
+db.sqlite3
