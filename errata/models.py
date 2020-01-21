@@ -133,6 +133,7 @@ class BlockedUser(models.Model):
 class Errata(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
     openstax_book = models.CharField(max_length=255, null=True, blank=True)
 
     is_assessment_errata = models.CharField(
@@ -262,7 +263,6 @@ class Errata(models.Model):
             self.archived = True
 
         super(Errata, self).save(*args, **kwargs)
-
 
     def __str__(self):
         return self.openstax_book
