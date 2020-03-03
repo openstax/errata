@@ -10,5 +10,9 @@ erratatool/settings/local.py
 /.coverage
 .DS_STORE
 __pycache__/*
+*/__pycache__/*
 *.bk
 db.sqlite3
+erratatool/static/*
+errata/__pycache__/models.cpython-37.pyc
+errata/__pycache__/models.cpython-37.pyc
