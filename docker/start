@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+DJANGO_SETTINGS_MODULE=erratatool.settings python manage.py migrate
+DJANGO_SETTINGS_MODULE=erratatool.settings python manage.py runserver 0.0.0.0:8000

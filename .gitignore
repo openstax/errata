@@ -14,5 +14,3 @@ __pycache__/*
 *.bk
 db.sqlite3
 erratatool/static/*
-errata/__pycache__/models.cpython-37.pyc
-errata/__pycache__/models.cpython-37.pyc
