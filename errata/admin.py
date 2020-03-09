@@ -15,7 +15,7 @@ from django.utils.html import mark_safe
 
 from extraadminfilters.filters import UnionFieldListFilter
 
-from .models import Errata, BlockedUser, EmailText, InternalDocumentation
+from .models import Errata, BlockedUser, EmailText, InternalDocumentation, Book
 from .forms import ErrataForm
 
 
@@ -260,6 +260,10 @@ class ErrataAdmin(ExportActionModelAdmin):
 
         return super(ErrataAdmin, self).get_form(request, obj, **kwargs)
 
+class BookAdmin(admin.ModelAdmin):
+    list_display = ['title', 'last_updated']
+
 admin.site.register(Errata, ErrataAdmin)
+admin.site.register(Book, BookAdmin)
 admin.site.register(BlockedUser, BlockedUserAdmin)
 admin.site.register(EmailText)
