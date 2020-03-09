@@ -130,11 +130,22 @@ class BlockedUser(models.Model):
     def __str__(self):
         return str(self.account_id)
 
+
+class Book(models.Model):
+    title = models.CharField(max_length=255)
+    cms_id = models.IntegerField(primary_key=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+
 class Errata(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     openstax_book = models.CharField(max_length=255, null=True, blank=True)
+    book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.SET_NULL)
 
     is_assessment_errata = models.CharField(
         max_length=100,
