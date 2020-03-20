@@ -1,4 +1,4 @@
-from .models import Errata
+from .models import Errata, Book
 
 from rest_framework import serializers
 
@@ -12,6 +12,7 @@ class ErrataSerializer(serializers.ModelSerializer):
                   'created',
                   'modified',
                   'openstax_book',
+                  'book',
                   'status',
                   'resolution',
                   'reviewed_date',
@@ -30,3 +31,15 @@ class ErrataSerializer(serializers.ModelSerializer):
                   'submitted_by_account_id',
                   'file_1',
                   'file_2')
+
+
+class BookSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super(BookSerializer, self).__init__(*args, **kwargs)
+
+        for field in self.fields:
+            self.fields[field].read_only = True
+
+    class Meta:
+        model = Book
+        fields = '__all__'

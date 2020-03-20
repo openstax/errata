@@ -145,7 +145,7 @@ class Errata(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     openstax_book = models.CharField(max_length=255, null=True, blank=True)
-    book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.SET_NULL)
+    book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.PROTECT)
 
     is_assessment_errata = models.CharField(
         max_length=100,
