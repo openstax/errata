@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'errata',
     'oxauth',
     'extraadminfilters',
+    'rest_framework',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

@@ -7,8 +7,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from django.shortcuts import render, redirect
-from .models import Errata
-from .serializers import ErrataSerializer
+from .models import Errata, Book
+from .serializers import ErrataSerializer, BookSerializer
 from .forms import ErrataModelForm
 from oxauth.functions import get_user_info
 
@@ -22,6 +22,10 @@ class JSONResponse(HttpResponse):
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
 
+
+class BookView(ModelViewSet):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
 
 class ErrataFilter(FilterSet):
     is_assessment_errata__not = django_filters.CharFilter(field_name='is_assessment_errata', exclude=True)
