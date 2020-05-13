@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+awsebcli = "*"
+gunicorn = "*"
+psycopg2 = "*"
+djangorestframework = "==3.11.0"
+django-filter = "*"
+oauthlib = "*"
+requests-oauthlib = "*"
+unicodecsv = "*"
+django-import-export = "*"
+
+[requires]
+python_version = "3.7"

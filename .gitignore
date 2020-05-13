@@ -1,16 +1,10 @@
-/.vagrant
-/static
+.idea/*
 *.pyc
-/media
-/Vagrantfile.local
-erratatool/settings/local.py
-*.log
-/.idea
-/htmlcov
-/.coverage
-.DS_STORE
-__pycache__/*
-*/__pycache__/*
-*.bk
+static/
 db.sqlite3
-erratatool/static/*
+errata/local.py
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
