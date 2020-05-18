@@ -1,0 +1,1 @@
+web: gunicorn -b :8000 -w 4 -t 2 errata.wsgi:application

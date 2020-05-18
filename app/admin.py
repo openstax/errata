@@ -1,0 +1,269 @@
+import unicodecsv
+from import_export import resources
+from import_export.fields import Field
+from import_export.admin import ExportActionModelAdmin, ExportActionMixin
+from import_export.formats import base_formats
+
+from django.contrib import admin
+from django.db import models
+from django.forms import CheckboxSelectMultiple
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+from django.http import HttpResponse
+from django.utils.encoding import smart_str
+from django.utils.html import mark_safe
+
+from extraadminfilters.filters import UnionFieldListFilter
+
+from .models import Errata, BlockedUser, EmailText, InternalDocumentation, Book
+from .forms import ErrataForm
+
+
+class ErrataResource(resources.ModelResource):
+    user_faculty_status = Field(attribute='user_faculty_status')
+    class Meta:
+        model = Errata
+        fields = ('id', 'created', 'modified', 'number_of_errors', 'is_assessment_errata', 'assessment_id', 'status', 'resolution', 'archived', 'junk', 'location', 'detail', 'internal_notes', 'resolution_notes', 'resolution_date', 'error_type', 'resource', 'submitted_by_account_id', 'user_faculty_status')
+        export_order = ('id', 'created', 'modified', 'number_of_errors', 'is_assessment_errata', 'assessment_id', 'status', 'resolution', 'archived', 'junk', 'location', 'detail', 'internal_notes', 'resolution_notes', 'resolution_date', 'error_type', 'resource', 'submitted_by_account_id', 'user_faculty_status')
+
+
+class InlineInternalImage(admin.TabularInline):
+    model = InternalDocumentation
+
+class BlockedUserAdmin(admin.ModelAdmin):
+    list_display = ('account_id', 'fullname', 'reason',)
+
+class ErrataAdmin(ExportActionModelAdmin):
+    class Media:
+        js = (
+            '//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js',  # jquery
+            'app/app-admin-ui.js',  # custom app javascript
+        )
+    resource_class = ErrataResource
+
+    form = ErrataForm
+    list_max_show_all = 10000
+    list_per_page = 200
+
+    fields = ['id',
+              'created',
+              'modified',
+              'openstax_book',
+              'is_assessment_errata',
+              'assessment_id',
+              'status',
+              'resolution',
+              'duplicate_id',
+              'archived',
+              'junk',
+              'location',
+              'detail',
+              'internal_notes',
+              'resolution_notes',
+              'resolution_date',
+              'error_type',
+              'number_of_errors',
+              'resource',
+              'file_1',
+              'file_2']
+    search_fields = ('id',
+                     'openstax_book',
+                     'detail',
+                     'location',
+                     'submitted_by__first_name',
+                     'submitted_by__last_name',
+                     'submitted_by__email')
+    formfield_overrides = {
+        models.ManyToManyField: {'widget': CheckboxSelectMultiple},
+    }
+    actions = ['mark_in_review', 'mark_reviewed', 'mark_archived', 'mark_completed', ExportActionMixin.export_admin_action]
+    inlines = [InlineInternalImage, ]
+    raw_id_fields = ('submitted_by', 'duplicate_id')
+
+    def get_export_formats(self):
+        return [base_formats.CSV]
+
+    """Actions for the Django Admin list view"""
+    def mark_in_review(self, request, queryset):
+        queryset.update(status='Editorial Review')
+    mark_in_review.short_description = "Mark app as in-review"
+
+    def mark_reviewed(self, request, queryset):
+        queryset.update(status='Reviewed')
+    mark_reviewed.short_description = "Mark app as reviewed"
+
+    def mark_archived(self, request, queryset):
+        queryset.update(archived=True)
+    mark_archived.short_description = "Mark app as archived"
+
+    def mark_completed(self, request, queryset):
+        queryset.update(status='Completed')
+    mark_completed.short_description = "Mark app as completed"
+
+    def get_actions(self, request):
+        actions = super(ErrataAdmin, self).get_actions(request)
+        if not request.user.is_superuser:
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+
+        if not request.user.groups.filter(name__in=['Content Managers']).exists():
+            if 'mark_in_review' in actions:
+                del actions['mark_in_review']
+            if 'mark_reviewed' in actions:
+                del actions['mark_reviewed']
+            if 'mark_archived' in actions:
+                del actions['mark_archived']
+            if 'mark_completed' in actions:
+                del actions['mark_completed']
+        return actions
+
+    def change_view(self, request, object_id, extra_context=None):
+        if not request.user.is_superuser or request.user.groups.filter(name__in=['Content Managers']).exists():
+            extra_context = extra_context or {}
+            extra_context['readonly'] = True
+        return super(ErrataAdmin, self).change_view(request, object_id, extra_context=extra_context)
+
+
+    """Model permissions"""
+    @method_decorator(csrf_protect)
+    def changelist_view(self, request, extra_context=None):
+        if request.user.is_superuser or request.user.groups.filter(name__in=['Content Managers']).exists():
+            self.list_display = ['id', 'openstax_book', 'created', 'modified', 'short_detail', 'number_of_errors', 'status', 'error_type', 'resource', 'location', 'resolution', 'archived', 'junk'] # list of fields to show if user is in Content Manager group or is a superuser
+            self.list_display_links = ['openstax_book']
+            self.list_filter = ('openstax_book', 'status', 'created', 'modified', 'is_assessment_errata', 'modified', 'error_type', 'resolution', 'archived', 'junk', 'resource')
+            self.editable = ['resolution']
+
+        else:
+            self.list_display = ['id', 'openstax_book', 'created', 'short_detail', 'status', 'error_type', 'resource', 'location', 'created', 'archived'] # list of fields to show otherwise
+            self.list_display_links = ['openstax_book']
+            self.list_filter = ('openstax_book', 'status', 'created', 'modified', 'is_assessment_errata', 'error_type', 'resolution', 'archived', 'resource')
+        return super(ErrataAdmin, self).changelist_view(request, extra_context)
+
+    @method_decorator(csrf_protect)
+    def get_form(self, request, obj=None, **kwargs):
+        if request.user.is_superuser or request.user.groups.filter(name__in=['Content Managers']).exists():
+            self.fields = ['id',
+                           'created',
+                           'modified',
+                           'openstax_book',
+                           'is_assessment_errata',
+                           'assessment_id',
+                           'status',
+                           'resolution',
+                           'duplicate_id',
+                           'location',
+                           'detail',
+                           'internal_notes',
+                           'resolution_notes',
+                           'resolution_date',
+                           'error_type',
+                           'number_of_errors',
+                           'resource',
+                           'accounts_link',
+                           'file_1',
+                           'file_2',
+                           'user_name',
+                           'user_email',
+                           'user_faculty_status',
+                           'archived',
+                           'junk',
+                           ] # fields to show on the actual form
+            self.readonly_fields = ['id',
+                                    'created',
+                                    'modified',
+                                    'user_name',
+                                    'user_email',
+                                    'user_faculty_status',
+                                    'accounts_link',
+                                    ]
+
+            self.save_as = True
+        elif request.user.groups.filter(name__in=['Editorial Vendor']).exists():
+            self.fields = ['id',
+                           'created',
+                           'modified',
+                           'openstax_book',
+                           'is_assessment_errata',
+                           'assessment_id',
+                           'status',
+                           'resolution',
+                           'duplicate_id',
+                           'location',
+                           'detail',
+                           'internal_notes',
+                           'resolution_notes',
+                           'resolution_date',
+                           'error_type',
+                           'number_of_errors',
+                           'resource',
+                           'user_faculty_status',
+                           'file_1',
+                           'file_2',
+                           'archived',
+                            ]  # fields to show on the actual form
+            self.readonly_fields = ['id',
+                                    'created',
+                                    'modified',
+                                    'user_faculty_status',
+                                    'archived',
+                                    'junk',
+                                    'detail',
+                                    ]
+
+            self.save_as = True
+        else:
+            self.fields = ['id',
+                           'created',
+                           'modified',
+                           'openstax_book',
+                           'is_assessment_errata',
+                           'assessment_id',
+                           'status',
+                           'resolution',
+                           'duplicate_id',
+                           'location',
+                           'detail',
+                           'internal_notes',
+                           'resolution_notes',
+                           'resolution_date',
+                           'error_type',
+                           'number_of_errors',
+                           'resource',
+                           'accounts_link',
+                           'file_1',
+                           'file_2',
+                           'archived',
+                           ]
+            self.readonly_fields = ['id',
+                                    'created',
+                                    'modified',
+                                    'openstax_book',
+                                    'is_assessment_errata',
+                                    'assessment_id',
+                                    'status',
+                                    'resolution',
+                                    'duplicate_id',
+                                    'archived',
+                                    'location',
+                                    'detail',
+                                    'internal_notes',
+                                    'resolution_notes',
+                                    'resolution_date',
+                                    'error_type',
+                                    'number_of_errors',
+                                    'resource',
+                                    'accounts_link',
+                                    'file_1',
+                                    'file_2',
+                                    ]
+            self.save_as = False
+
+        return super(ErrataAdmin, self).get_form(request, obj, **kwargs)
+
+class BookAdmin(admin.ModelAdmin):
+    list_display = ['title', 'last_updated']
+
+admin.site.register(Errata, ErrataAdmin)
+admin.site.register(Book, BookAdmin)
+admin.site.register(BlockedUser, BlockedUserAdmin)
+admin.site.register(EmailText)
