@@ -11,6 +11,9 @@ set -o pipefail
 
 python_version=`cat .python-version`
 
+echo Installing pipenv
+pip install pipenv
+
 echo Adding user bin to bath (for pip installed commands to work)
 PATH=$PATH:/home/ubuntu/.local/bin
 
