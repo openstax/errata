@@ -9,13 +9,20 @@ set -o pipefail
 # Script to run on the deployed server when the code has been
 # updated (or on first deployment)
 
-echo Installing Important stuff
+python_version=`cat .python-version`
 
-echo Installing more important stuff
+echo Adding user bin to bath (for pip installed commands to work)
+PATH=$PATH:/home/ubuntu/.local/bin
 
-echo Installing the most important stuff
+echo Setting Python version for pipenv
+pipenv --python $python_version
 
-echo Building some stuff
+echo Installing requirements
+pipenv install
+
+echo collecting static files
+pipenv run python manage.py collectstatic
+
 
 echo Done!
 
