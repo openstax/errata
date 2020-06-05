@@ -6,19 +6,7 @@
 set -e
 set -o pipefail
 
-echo Installing pipenv
-pip install pipenv
-
-echo Adding user bin to bath (for pip installed commands to work)
-PATH=$PATH:/home/ubuntu/.local/bin
-
-echo Setting Python version for pipenv
-pipenv --python $python_version
-
-echo Installing requirements
-pipenv install
-
 echo collecting static files
-pipenv run python manage.py collectstatic
+/usr/bin/python3 -m venv python manage.py collectstatic
 
 echo Done!
