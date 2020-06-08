@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'errata',
+    'app',
     'oxauth',
     'extraadminfilters',
     'rest_framework',
