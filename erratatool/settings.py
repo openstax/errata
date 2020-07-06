@@ -25,7 +25,7 @@ SECRET_KEY = '=pn(&2z#%g&^%6+bujsy&-gt3)gt7og%73kn6zq8qbp45zfm87'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', '.openstax.org']
 # Application definition
 
 INSTALLED_APPS = [
