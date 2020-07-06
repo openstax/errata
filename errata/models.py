@@ -192,7 +192,7 @@ class Errata(models.Model):
     resource_other = models.CharField(max_length=255, blank=True, null=True)
 
     # TODO: We are keeping the Foreign Key to the local user until the migrations to production are complete, then remove submitted_by and submitter_email_address
-    submitted_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    submitted_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='errata_submitted_by')
     submitter_email_address = models.EmailField(blank=True, null=True)
     submitted_by_account_id = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(0), is_user_blocked])
 
