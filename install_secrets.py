@@ -2,8 +2,11 @@ import json
 import os
 import boto3
 
-NAMESPACE = '/{}/errata/server'.format(os.environ.get('secrets_env'))
-ssm = boto3.client("ssm")
+# these are set in deployment CFN templates (or can be overridden locally)
+NAMESPACE = '/{}/errata/server'.format(os.environ.get('ENV_NAME'))
+REGION = os.environ.get('AWS_REGION')
+
+ssm = boto3.client("ssm", region_name=REGION)
 settings_file = open('erratatool/local.py', 'w+')
 
 
@@ -17,7 +20,6 @@ def _get_ssm_keys(path, next_token=None):
         aws_params['NextToken'] = next_token
 
     keys = ssm.get_parameters_by_path(**aws_params)
-    print(keys)
     _process_keys(keys['Parameters'])
 
 
