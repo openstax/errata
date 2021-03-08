@@ -13,7 +13,8 @@ settings_file = open('erratatool/local.py', 'w+')
 def _get_ssm_keys(path, next_token=None):
     aws_params = {
         'Path': path,
-        'WithDecryption': True
+        'WithDecryption': True,
+        'Recursive': True
     }
 
     if next_token:
@@ -26,12 +27,16 @@ def _get_ssm_keys(path, next_token=None):
 def _process_keys(keys):
     for key in keys:
         try:
-            value = json.loads(key['Value'])
+            setting_value = json.loads(key['Value'])
         except ValueError:
-            value = key['Value']
-        setting_string = "{}='{}'\n".format(key['Name'].split('/')[-1].upper(), value)
+            setting_value = key['Value']
+        
+        # build the settings key
+        setting_key = key['Name'].replace(NAMESPACE, '')[1:].replace('/', '_').upper()
+        
+        setting_string = "{}='{}'\n".format(setting_key, setting_value)
         settings_file.write(setting_string)
-        globals()[key['Name'].split('/')[-1]] = value
+        globals()[setting_key] = setting_value
 
 
 def load_settings():
