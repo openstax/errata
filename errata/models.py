@@ -144,8 +144,8 @@ class Errata(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    openstax_book = models.CharField(max_length=255, null=True, blank=True)
-    book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.PROTECT)
+    #update_cms_books.py and migrate_errata_openstax_books.py will need to be run
+    openstax_book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.PROTECT)
 
     is_assessment_errata = models.CharField(
         max_length=100,
